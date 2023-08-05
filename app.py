@@ -4,8 +4,10 @@ from surveys import satisfaction_survey as survey
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "secret"
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 debug = DebugToolbarExtension(app)
+
 
 responses = []
 
@@ -30,6 +32,17 @@ def handle_question():
 
 @app.route('/questions/<int:qid>')
 def show_question(qid):
+
+    if (responses is None):
+        return redirect('/')
+    
+    if (len(responses) == len(survey.questions)):
+        return redirect('/complete')
+    
+    if (len(responses) != qid):
+        flash(f"Invalid question id: {qid}.")
+        return redirect(f"/questions/{len(responses)}")
+
     question = survey.questions[qid]
     return render_template('question.html', question_num=qid, question=question)
 
